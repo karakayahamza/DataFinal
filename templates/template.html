@@ -2,14 +2,65 @@
 <html>
 <head>
     <title>Publication Statistics</title>
+    <script src='https://cdn.plot.ly/plotly-2.24.1.min.js'></script>
 </head>
 <body>
     <h1>Publication Statistics</h1>
 
-    <h2>Publication Count by Year</h2>
-    <img src="{{ histogram_path }}" alt="Publication Count Histogram">
+     <div id='myDiv'>
+    <script>
+        var trace1 = {
+  x: {{ years }},
+  y: {{ counts }},
+  mode: 'markers',
+  type: 'bar',
+  name: 'Team A',
+};
 
-    <h2>Author Distribution (Excluding D. Canbula and B. Canbula)</h2>
-    <img src="{{ pie_chart }}" alt="Author Distribution Pie Chart">
+var data = [ trace1 ];
+
+var layout = {
+  xaxis: {
+    type: 'category',
+    title: 'Years',
+  },
+  yaxis: {
+    range: [0, 7],
+    title: 'Counts'
+  },
+  title:'Publication Count by Year'
+};
+
+Plotly.newPlot('myDiv', data, layout);
+    </script>
+    </div>
+
+    <div id='myDiv2'>
+    <script>
+         var data2 = [{
+  type: "pie",
+  values: {{ pieValues|tojson }},
+  labels: {{ pieLabels|tojson }},
+  textinfo: "label+percent",
+  textposition: "outside",
+  automargin: true,
+  title:"Pie Chart For Number Of Authors"
+}]
+
+var layout2 = {
+  height: 350,
+  width: 350,
+  margin: {"t": 0, "b": 0, "l": 0, "r": 0},
+  showlegend: false,
+  title:"Pie Chart For Number Of Authors"
+  }
+
+Plotly.newPlot('myDiv2', data2, layout2)
+
+    </script>
+    </div>
+    <h2>Cloud Data</h2>
+    <img src="{{ cloudData }}" alt="Word Cloud">
+
 </body>
 </html>

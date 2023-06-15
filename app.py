@@ -2,8 +2,8 @@ import os
 import pandas as pd
 from flask import Flask, render_template
 import json
-from matplotlib import pyplot as plt
 from publications import Publications
+from wordcloud import WordCloud
 
 app = Flask(__name__)
 
@@ -16,10 +16,8 @@ def getData():
 
     project_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # Construct the file path
     file_path = os.path.join(project_dir, 'data.json')
 
-    # Read data from JSON file
     with open(file_path, 'r') as file:
         data = json.load(file)
 
@@ -33,28 +31,25 @@ def getData():
             }
             publications.append(publication)
 
-
-    print(publications)
-
+    #Histogram
     df = pd.DataFrame.from_dict(count_publications_by_date(publications), orient='index', columns=['Count'])
-
-    # Sort DataFrame by index (year)
     df = df.sort_index()
+    years = df.index.tolist()
+    years_as_integers = [int(year) for year in years]
+    counts = df['Count'].tolist()
 
-    # Create the histogram using Pandas plot
-    ax = df.plot(kind='bar', legend=False, rot=45)
-    ax.set_xlabel('Year')
-    ax.set_ylabel('Count')
-    ax.set_title('Publication Count by Year')
-
-    # Save the plot as an image
-    plot_path = 'static/histogram.png'
-    plt.tight_layout()
-    plt.savefig(plot_path)
-
+    #PieGraph
     pieGraph = pie_chart(publications)
-    # Pass the image path to the HTML template
-    return render_template('template.html', histogram_path=plot_path, pie_chart=pieGraph)
+    pieLabels = pieGraph.keys()
+    pieVal = pieGraph.values()
+    pieValues = [int(year) for year in pieVal]
+    liste = list(pieLabels)
+
+
+    #CLOUD Image
+    cloudData = cloud(publications)
+    return render_template('template.html', pieLabels=liste, pieValues=pieValues, cloudData=cloudData,
+                           years=years_as_integers, counts=counts)
 
 
 def pie_chart(data):
@@ -72,26 +67,35 @@ def pie_chart(data):
         else:
             author_frequencies[author] = 1
 
-    labels = list(author_frequencies.keys())
-    values = list(author_frequencies.values())
+    return author_frequencies
 
-    plt.figure(figsize=(8, 8))  # Şeklin boyutunu belirle (isteğe bağlı)
-    plt.pie(values, labels=labels, autopct='%1.1f%%')
-    plt.axis('equal')
-    plt.title('Authors (excluding B Canbula)')
 
-    chart_path = 'static/pie_chart.png'
-    plt.savefig(chart_path)
-    plt.close()
+def cloud(publications):
+    titles = [pub['title'] for pub in publications]
 
-    return chart_path
+    preprocessed_titles = []
+    for title in titles:
+        processed_title = ''.join(ch.lower() for ch in title if ch.isalnum() or ch.isspace())
+        words = processed_title.split()
+        preprocessed_titles.extend(words)
+
+    word_frequencies = {}
+    for word in preprocessed_titles:
+        word_frequencies[word] = word_frequencies.get(word, 0) + 1
+
+    wordcloud = WordCloud(width=800, height=400, background_color='white').generate_from_frequencies(word_frequencies)
+
+    wordcloud_image = "static/wordcloud.png"
+    wordcloud.to_file(wordcloud_image)
+
+    return wordcloud_image
 
 
 def count_publications_by_date(publications):
     publication_count = {}
     for publication in publications:
         publication_info = publication['publication_info']
-        date = publication_info.split(',')[-1].strip()
+        date = publication_info.split(',')[-1].strip().rstrip('.')
 
         if date in publication_count:
             publication_count[date] += 1
