@@ -1,10 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Yayın Başlık Histogramı</title>
+    <title>Publication Statistics</title>
 </head>
 <body>
-    <h1>Yayın Başlık Histogramı</h1>
-    <img src="{{ url_for('static', filename='histogram.png') }}" alt="Histogram">
+    <h1>Publication Statistics</h1>
+
+    <h2>Publication Count by Year</h2>
+    <img src="{{ histogram_path }}" alt="Publication Count Histogram">
+
+    <h2>Author Distribution (Excluding D. Canbula and B. Canbula)</h2>
+    <img src="{{ pie_chart }}" alt="Author Distribution Pie Chart">
 </body>
 </html>

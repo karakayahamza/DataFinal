@@ -10,8 +10,6 @@ import pandas as pd
 
 
 class Publications:
-    print("Hello")
-
     def getData(self):
         driver = webdriver.Chrome()
         # Sayfayı açma
